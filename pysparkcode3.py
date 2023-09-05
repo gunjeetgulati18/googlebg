@@ -117,20 +117,17 @@ def write_to_bigquery(output_df):
 
 
 if __name__ == "__main__":
-	# parser = argparse.ArgumentParser()
-	# parser.add_argument("-file_format",type=str,default=None)
-	# parser.add_argument("-file_name",type=str,default=None)
-	# parser.add_argument("-load_partition",
-	# 					action="store_true",
-	# 					help="""this should be passed when input file 
-	# 							has to be partitioned for parallel processing while loading""")
-	# args= parser.parse_args()
-	# file_format = args.file_format if args.file_format else None
-	# file_name = args.file_name if args.file_name else ""
-	# load_partition = args.load_partition if args.load_partition else False
-	file_format = "csv"
-	file_name = "sample_org.csv"
-	load_partition = "True"
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-file_format",type=str,default=None)
+	parser.add_argument("-file_name",type=str,default=None)
+	parser.add_argument("-load_partition",
+						action="store_true",
+						help="""this should be passed when input file 
+								has to be partitioned for parallel processing while loading""")
+	args= parser.parse_args()
+	file_format = args.file_format if args.file_format else None
+	file_name = args.file_name if args.file_name else ""
+	load_partition = args.load_partition if args.load_partition else False
 	main(file_format,file_name,load_partition)
 
  
