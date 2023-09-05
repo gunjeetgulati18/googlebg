@@ -60,32 +60,38 @@ def get_spark():
 	return spark
 
 
-def load_data(schema,file_format=None,file_location=None,load_partition=False):
+def load_data(schema,file_format=None,file_location=None,load_partition=False,schema=False:
 	spark = get_spark()
 	bucket_name = config['bucket']
 	if file_location :
 		file_location =str(file_location)
 		file_location = os.path.join(bucket_name,file_location)
-	if load_partition:
+	if load_partition and schema :
 		numPartitions = int(config['numPartitions'])
 		df_in = spark.read.option("numPartitions",numPartitions)\
 							.format(file_format)\
 							.schema(schema)\
 							.option("header", True)\
 							.load(file_location)
-	else:
+	elif schema:
 		df_in = spark.read.format(file_format)\
 							.schema(schema)\
 							.option("header", True)\
 							.option('inferSchema',False)\
 							.load(file_location)
+	else:
+		df_in = spark.read.format(file_format)\
+							.option("header", True)\
+							.option('inferSchema',False)\
+							.load(file_location)
+		
 			
 	return df_in
 
-def main(file_format,file_name,load_partition):
+def main(file_format,file_name,load_partition,schema):
 	get_bucket_list_items()
 	schema = load_file_schema()
-	input_df = load_data(schema,file_format,file_name,load_partition)
+	input_df = load_data(schema,file_format,file_name,load_partition,schema)
 	input_df.show(5)
 	partition_by_date=datetime.today().strftime('%Y%m%d')
 	input_df = input_df.withColumn("in_date",fc.current_date())
@@ -124,10 +130,13 @@ if __name__ == "__main__":
 						action="store_true",
 						help="""this should be passed when input file 
 								has to be partitioned for parallel processing while loading""")
+	parser.add_argument("-schema",
+						action="store_true",
+						help="""this is to take predefined schema or not""")
 	args= parser.parse_args()
 	file_format = args.file_format if args.file_format else None
 	file_name = args.file_name if args.file_name else ""
 	load_partition = args.load_partition if args.load_partition else False
-	main(file_format,file_name,load_partition)
+	main(file_format,file_name,load_partition,schema)
 
  
