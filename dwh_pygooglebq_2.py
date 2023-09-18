@@ -144,8 +144,7 @@ def main(file_format,file_name,load_partition,schema):
 
 	input_df = input_df.withColumn("concat_column",fc.concat(fc.col(config['concat_field1']),fc.col(config['concat_field2'])).alias("concat_field"))
 	input_df = input_df.groupBy(*column_names).agg(fc.collect_list("concat_column").alias("list_of_period_dim"),fc.collect_list("VALUE").alias("list_of_value"))
-	input_df = input_df.withColumn("list_of_period_dim" ,fc.struct(fc.col('list_of_period_dim')))
-	input_df = input_df.withColumn("list_of_value" ,fc.struct(fc.col('list_of_value')))
+	input_df = input_df.withColumn("list_of_period_dim" ,fc.struct(fc.col('list_of_period_dim'),fc.col('list_of_value')))
 	input_df.show(5)
 	# input_df = input_df.filter("Founded > 2003")
 	write_to_bigquery(input_df)
