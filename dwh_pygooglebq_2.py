@@ -145,8 +145,15 @@ def main(file_format,file_name,load_partition,schema):
 	input_df = input_df.withColumn("concat_column",fc.concat(fc.col(config['concat_field1']),fc.col(config['concat_field2'])).alias("concat_field"))
 	input_df = input_df.groupBy(*column_names).agg(fc.collect_list("concat_column").alias("list_of_period_dim"),fc.collect_list("VALUE").alias("list_of_value"))
 	input_df = input_df.withColumn("list_of_period_dim" ,fc.struct(fc.col('list_of_period_dim'),fc.col('list_of_value')))
+	input_df = input_df.drop(input_df['list_of_value'])
 	input_df.show(5)
-	# input_df = input_df.filter("Founded > 2003")
+	df_flat =input_df.select("*")
+	df_flat = df_flat.withColumn("exploded",fc.expr("arrays_zip(list_of_period_dim.list_of_period_dim,list_of_period_dim.list_of_value)"))
+	df_flat.show(5,False)
+	df_expl = df_flat.withColumn("exploded",fc.explode(fc.col("exploded")))
+	df_expl.show(5,False)
+	pivoted_df = df_expl.groupBy(*column_names).pivot("exploded.list_of_period_dim").agg({"exploded.list_of_value":"first"})
+	pivoted_df.show(5,False)
 	write_to_bigquery(input_df)
 
 	
